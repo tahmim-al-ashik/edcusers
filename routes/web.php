@@ -6,6 +6,8 @@ use App\Http\Controllers\RouterController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ConnectedDeviceController;
 
+
+Route::get('/api/bandwidth', [App\Http\Controllers\DashboardController::class, 'bandwidth']);
 // Delete a connected device
 Route::delete(
     '/routers/{router}/devices/{device}',
@@ -47,3 +49,8 @@ Route::prefix('reports')->group(function () {
     Route::get('/device/{id}',      [ReportController::class, 'deviceDetails'])
          ->name('reports.device-details');
 });
+
+
+// api versions
+
+

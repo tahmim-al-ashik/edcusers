@@ -229,14 +229,17 @@ class RouterController extends Controller
     }
 
     /**
-     * Return current RX/TX counters for this router and its devices.
+     * Return current RX/TX counters (router + per-interface).
      * Called via AJAX polling from show.blade.php (route name: routers.realtime-data).
+     * 
+     * NOTE: There must be exactly one realtimeData(...) method in this class.
      */
     public function realtimeData(Router $router)
     {
-        // 1) First, fetch the router’s current RX/TX totals by re-connecting to the device
-        $totalRx   = 0;
-        $totalTx   = 0;
+        $totalRx = 0;
+        $totalTx = 0;
+        $interfaces = [];
+
         try {
             $client = new Client(
                 (new Config())
@@ -253,44 +256,25 @@ class RouterController extends Controller
                 ->read();
 
             foreach ($allIfaces as $iface) {
-                if (
-                    isset($iface['running']) &&
-                    $iface['running'] === "true" &&
-                    ($iface['disabled'] ?? "false") !== "true"
-                ) {
-                    $totalRx += intval($iface['rx-byte'] ?? 0);
-                    $totalTx += intval($iface['tx-byte'] ?? 0);
+                $name = $iface['name'] ?? null;
+                if (! $name || ($iface['running'] ?? 'false') !== 'true') {
+                    continue;
                 }
+
+                $rx = intval($iface['rx-byte'] ?? 0);
+                $tx = intval($iface['tx-byte'] ?? 0);
+
+                $interfaces[$name] = ['rx' => $rx, 'tx' => $tx];
+                $totalRx += $rx;
+                $totalTx += $tx;
             }
         } catch (\Throwable $e) {
-            // Log error, but continue to return device counters
             Log::error("Router {$router->id} realtimeData error: {$e->getMessage()}");
         }
 
-        // 2) Fetch each connected device’s latest bytes_in / bytes_out
-        //    We assume “bytes_in” and “bytes_out” are kept up-to-date in DB each time
-        //    the MikroTik is polled by your scheduled job or by the “checkNow” endpoint.
-        $devices = ConnectedDevice::where('router_id', $router->id)
-            ->select(['id', 'hostname', 'mac_address', 'ip_address', 'bytes_in', 'bytes_out', 'active'])
-            ->get();
-        
-        // 3) Return combined JSON
         return response()->json([
-            'router'  => [
-                'rx' => $totalRx,
-                'tx' => $totalTx,
-            ],
-            'devices' => $devices->map(function($d) {
-                return [
-                    'id'         => $d->id,
-                    'hostname'   => $d->hostname,
-                    'mac'        => $d->mac_address,
-                    'ip'         => $d->ip_address,
-                    'bytes_in'   => intval($d->bytes_in),
-                    'bytes_out'  => intval($d->bytes_out),
-                    'active'     => (bool) $d->active,
-                ];
-            }),
+            'router'     => ['rx' => $totalRx, 'tx' => $totalTx],
+            'interfaces' => $interfaces,
         ]);
     }
 }

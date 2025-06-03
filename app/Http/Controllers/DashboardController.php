@@ -62,4 +62,16 @@ class DashboardController extends Controller
             'recentlyOffline'
         ));
     }
+
+
+
+  public function bandwidth()
+    {
+        return response()->json([
+            'time' => now()->format('H:i:s'),
+            'rx' => rand(1_000_000, 9_000_000),
+            'tx' => rand(1_000_000, 9_000_000),
+        ]);
+    }
+
 }

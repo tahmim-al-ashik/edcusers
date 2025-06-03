@@ -12,7 +12,11 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
+        // If you had other scheduled tasks, they’d go here, e.g.:
         // $schedule->command('inspire')->hourly();
+
+        // Your custom command:
+        $schedule->command('routers:check')->everyFiveMinutes();
     }
 
     /**
@@ -20,7 +24,7 @@ class Kernel extends ConsoleKernel
      */
     protected function commands(): void
     {
-        $this->load(__DIR__.'/Commands');
+        $this->load(__DIR__ . '/Commands');
 
         require base_path('routes/console.php');
     }
