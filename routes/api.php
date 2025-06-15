@@ -104,8 +104,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v2')->group(function () {
 
-    Route::get('/hello/parvez',function(){
-        return "Hello Parvez";
+    Route::get('/hello/plexus',function(){
+        return "Hello plexus";
     });
 
     // Broadband Checkout URL ---------
@@ -713,10 +713,12 @@ Route::prefix('v2')->group(function () {
         Route::post('/assign/shadhin/client/{zone_id}/package/{id}', 'shadhinPackageAssign')->middleware('auth:sanctum');
     });
 
+
     Route::controller(ShadhinHotspotClientController::class)->group(function(){
         Route::post('/shadhin/hotspot/client/internet/user/create', 'createHotspotInternetUserShadhinClient');
         Route::post('/users/billing/panel/hotspot/login', 'user_login_hotspot_billing')->middleware('guest');
     });
+
 
     Route::controller(ShadhinHotspotCheckoutURLController::class)->group(function(){
         Route::post('/shadhin/hotspot/payment/bkash/create', 'create')->middleware('auth:sanctum');
@@ -774,6 +776,7 @@ Route::prefix('v2')->group(function () {
         Route::post('/trans/nttn/pop/bulk/upload','bulkUploadTransNTTNPop')->middleware('auth:sanctum');
     });
 
+
     // Branch Pops ---
     Route::controller(TransBranchPopController::class)->group(function(){
         Route::get('/trans/branch/pop/list/{auth_id}','transBranchPopList')->middleware('auth:sanctum');
@@ -790,6 +793,7 @@ Route::prefix('v2')->group(function () {
         Route::get('/trans/all/lat/long/{auth_id}','getTransLatLong');
     });
 
+    
     // Sub Branch Pops ---
     Route::controller(TransSubBranchPopController::class)->group(function(){
         Route::get('/trans/sub_branch/pop/list/{auth_id}','transSubBranchPopList')->middleware('auth:sanctum');
